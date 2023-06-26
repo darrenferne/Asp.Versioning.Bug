@@ -3,6 +3,8 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.OData;
 using Asp.Versioning.Test.LetterApi;
 using Asp.Versioning.Test.WordApi;
+using Asp.Versioning.Test.MetadataApi;
+using Microsoft.OData.ModelBuilder;
 
 namespace Asp.Versioning.Test
 {
@@ -32,22 +34,51 @@ namespace Asp.Versioning.Test
                 })
                 .AddOData(options =>
                 {
+                    options.AddRouteComponents("metadata");
                     options.AddRouteComponents("lettersapi");
+                    options.AddRouteComponents("lettersapi/metadata");
                     options.AddRouteComponents("wordsapi");
-
+                    options.AddRouteComponents("wordsapi/metadata");
+                    
+                    //This works 
+                    //options.ModelBuilder.ModelBuilderFactory = () => new ODataConventionModelBuilder();
+                    //But this doesn't
+                    options.ModelBuilder.ModelBuilderFactory = () => new ODataModelBuilder();
                     options.ModelBuilder.DefaultModelConfiguration = (builder, version, route) =>
                     {
+                        if (route == "metadata")
+                        {
+                            builder.EntitySet<Metadata>("Metadata");
+                            builder.EntityType<Metadata>()
+                                   .HasKey(e => e.TypeName);
+
+                        }
                         if (route == "lettersapi")
                         {
                             builder.EntitySet<LetterType>("Letter");
                             builder.EntityType<LetterType>()
                                    .HasKey(e => e.Id);
+
+                        }
+                        else if (route == "lettersapi/metadata")
+                        {
+                            builder.EntitySet<Metadata>("Metadata");
+                            builder.EntityType<Metadata>()
+                                   .HasKey(e => e.TypeName);
+
                         }
                         else if (route == "wordsapi")
                         {
                             builder.EntitySet<WordType>("Word");
                             builder.EntityType<WordType>()
                                    .HasKey(e => e.Id);
+                        }
+                        else if(route == "wordsapi/metadata")
+                        {
+                            builder.EntitySet<Metadata>("Metadata");
+                            builder.EntityType<Metadata>()
+                                   .HasKey(e => e.TypeName);
+
                         }
                     };
                 })
