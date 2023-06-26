@@ -5,6 +5,7 @@ using Asp.Versioning.Test.LetterApi;
 using Asp.Versioning.Test.WordApi;
 using Asp.Versioning.Test.MetadataApi;
 using Microsoft.OData.ModelBuilder;
+using KellermanSoftware.CompareNetObjects;
 
 namespace Asp.Versioning.Test
 {
@@ -15,8 +16,8 @@ namespace Asp.Versioning.Test
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
             builder.Services.AddControllers();
+            
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -40,9 +41,6 @@ namespace Asp.Versioning.Test
                     options.AddRouteComponents("wordsapi");
                     options.AddRouteComponents("wordsapi/metadata");
                     
-                    //This works 
-                    //options.ModelBuilder.ModelBuilderFactory = () => new ODataConventionModelBuilder();
-                    //But this doesn't
                     options.ModelBuilder.ModelBuilderFactory = () => new ODataModelBuilder();
                     options.ModelBuilder.DefaultModelConfiguration = (builder, version, route) =>
                     {
@@ -50,10 +48,10 @@ namespace Asp.Versioning.Test
                         {
                             builder.EntitySet<Metadata>("Metadata");
                             builder.EntityType<Metadata>()
-                                   .HasKey(e => e.TypeName);
-
+                                    .HasKey(e => e.TypeName)
+                                    .Ignore(p => p.DisplayName);
                         }
-                        if (route == "lettersapi")
+                        else if (route == "lettersapi")
                         {
                             builder.EntitySet<LetterType>("Letter");
                             builder.EntityType<LetterType>()
@@ -64,8 +62,8 @@ namespace Asp.Versioning.Test
                         {
                             builder.EntitySet<Metadata>("Metadata");
                             builder.EntityType<Metadata>()
-                                   .HasKey(e => e.TypeName);
-
+                                   .HasKey(e => e.TypeName)
+                                   .Ignore(p => p.DisplayName);  
                         }
                         else if (route == "wordsapi")
                         {
@@ -73,12 +71,12 @@ namespace Asp.Versioning.Test
                             builder.EntityType<WordType>()
                                    .HasKey(e => e.Id);
                         }
-                        else if(route == "wordsapi/metadata")
+                        else if (route == "wordsapi/metadata")
                         {
                             builder.EntitySet<Metadata>("Metadata");
                             builder.EntityType<Metadata>()
-                                   .HasKey(e => e.TypeName);
-
+                                   .HasKey(e => e.TypeName)
+                                   .Ignore(p => p.DisplayName);
                         }
                     };
                 })
